@@ -1,18 +1,24 @@
 import Foundation
 
 guard let productPath = ProcessInfo.processInfo.environment["BUILT_PRODUCTS_DIR"] else {
+    print("BUILT_PRODUCTS_DIR not found.")
     exit(0)
 }
 var xcURLs = [URL]()
 let productURL = URL(fileURLWithPath: productPath)
 var artifactsURL = productURL
-for _ in 0..<6 {
+for idx in 0..<6 {
     artifactsURL.deleteLastPathComponent()
+    if idx == 2 && artifactsURL.lastPathComponent != "ArchiveIntermediates" {
+        print("not archiving, skipped.")
+        exit(0)
+    }
 }
 artifactsURL.appendPathComponent("SourcePackages")
 artifactsURL.appendPathComponent("artifacts")
 
 guard let enumerator = FileManager.default.enumerator(at: artifactsURL, includingPropertiesForKeys: [.isDirectoryKey], options: .skipsSubdirectoryDescendants) else {
+    print("artifacts folder not found. skipped.")
     exit(0)
 }
 
@@ -39,7 +45,7 @@ func selectDeviceFramework(for url: URL) -> URL? {
     guard let dict = NSDictionary(contentsOf: url.appendingPathComponent("Info.plist")) else { return nil }
     guard let libs = dict["AvailableLibraries"] as? NSArray else { return nil }
     for case let lib as NSDictionary in libs {
-        if lib["SupportedPlatformVariant"] as? String != "simulator" {
+        if lib["SupportedPlatformVariant"] as? String == nil && lib["SupportedPlatform"] as? String == "ios" {
             if let libIdentifier = lib["LibraryIdentifier"] as? String, let libPath = lib["LibraryPath"] as? String {
                 return url.appendingPathComponent(libIdentifier).appendingPathComponent(libPath)
             }

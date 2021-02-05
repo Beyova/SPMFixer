@@ -14,6 +14,11 @@ if args["archive"] != nil {
     exit(0)
 }
 
+if let archivePath = args["archivePath"], args["clean"] != nil {
+    try cleanArchive(archivePath: archivePath)
+    exit(0)
+}
+
 if let name = args["unlink"], let project = args["project"] {
     let target = args["target"] ?? URL(fileURLWithPath: project).deletingPathExtension().lastPathComponent
     try unlink(projectPath: project, target: target, name: name)

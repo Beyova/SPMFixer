@@ -25,6 +25,11 @@ if let name = args["unlink"], let project = args["project"] {
     exit(0)
 }
 
+if args["rc"] != nil, let project = args["project"] {
+    try modifyRC(projectPath: project)
+    exit(0)
+}
+
 private func extractArgs(args: [String]) -> [String: String] {
     var ret = [String: String]()
     var currentKey: String?
